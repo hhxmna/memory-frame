@@ -199,10 +199,31 @@ export function App() {
         ctx.imageSmoothingQuality = 'high';
       }
       const dataUrl = canvas.toDataURL('image/png');
-      const a = document.createElement('a');
-      a.href = dataUrl;
-      a.download = 'memory-frame.png';
-      a.click();
+
+      // Safari (especially iOS) is picky about programmatic downloads of data URLs.
+      // In Safari we open the PNG in a new tab so the user can save/share it.
+      const ua = navigator.userAgent;
+      const isIOS = /iP(ad|hone|od)/.test(ua);
+      const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
+
+      if (isIOS || isSafari) {
+        const win = window.open();
+        if (win) {
+          win.document.write(
+            `<title>memory-frame.png</title><style>body{margin:0;background:#111;display:flex;align-items:center;justify-content:center;}img{max-width:100%;height:auto;}</style><img src="${dataUrl}" alt="Memory frame" />`,
+          );
+        } else {
+          // Fallback: navigate current tab
+          window.location.href = dataUrl;
+        }
+      } else {
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = 'memory-frame.png';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
     } catch (err) {
       console.error('Export failed:', err);
     }
