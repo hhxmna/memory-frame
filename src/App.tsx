@@ -207,15 +207,14 @@ export function App() {
       const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
 
       if (isIOS || isSafari) {
-        const win = window.open();
-        if (win) {
-          win.document.write(
-            `<title>memory-frame.png</title><style>body{margin:0;background:#111;display:flex;align-items:center;justify-content:center;}img{max-width:100%;height:auto;}</style><img src="${dataUrl}" alt="Memory frame" />`,
-          );
-        } else {
-          // Fallback: navigate current tab
-          window.location.href = dataUrl;
-        }
+        // Use an <a target="_blank"> so Safari treats it as user navigation.
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
       } else {
         const a = document.createElement('a');
         a.href = dataUrl;
