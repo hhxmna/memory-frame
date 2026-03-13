@@ -152,7 +152,7 @@ export function App() {
         logging: false,
         width: exportW,
         height: exportH,
-        onclone(_doc, clonedEl) {
+        onclone(doc, clonedEl) {
           clonedEl.style.transform = 'none';
           clonedEl.style.overflow = 'hidden';
           clonedEl.style.width = `${exportW}px`;
@@ -162,6 +162,20 @@ export function App() {
           clonedEl.style.minHeight = `${exportH}px`;
           clonedEl.style.maxHeight = `${exportH}px`;
           clonedEl.style.boxSizing = 'border-box';
+
+          // For the exported image only, force a safe system monospace font
+          // (similar to Roboto Mono) so Safari doesn't involve external fonts.
+          const exportRoot = clonedEl as HTMLElement;
+          exportRoot.setAttribute('data-export-root', 'true');
+          const styleNode = doc.createElement('style');
+          styleNode.textContent = `
+            [data-export-root="true"],
+            [data-export-root="true"] * {
+              font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+            }
+          `;
+          doc.head.appendChild(styleNode);
+
           const texture = clonedEl.querySelector('.memory-frame-texture') as HTMLElement | null;
           const board = clonedEl.querySelector('[class*="-frame-board"]') as HTMLElement | null;
           const overlay = clonedEl.querySelector('.memory-frame-overlay') as HTMLElement | null;
