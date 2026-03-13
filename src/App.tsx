@@ -198,31 +198,38 @@ export function App() {
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
       }
-      const dataUrl = canvas.toDataURL('image/png');
 
-      // Safari (especially iOS) is picky about programmatic downloads of data URLs.
-      // In Safari we open the PNG in a new tab so the user can save/share it.
-      const ua = navigator.userAgent;
-      const isIOS = /iP(ad|hone|od)/.test(ua);
-      const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
-
-      if (isIOS || isSafari) {
-        // Use an <a target="_blank"> so Safari treats it as user navigation.
-        const a = document.createElement('a');
-        a.href = dataUrl;
-        a.target = '_blank';
-        a.rel = 'noopener noreferrer';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-      } else {
-        const a = document.createElement('a');
-        a.href = dataUrl;
-        a.download = 'memory-frame.png';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+      // Convert canvas to a PNG blob
+      const blob = await new Promise<Blob | null>((resolve) => {
+        canvas.toBlob((b) => resolve(b), 'image/png');
+      });
+      if (!blob) {
+        throw new Error('Failed to create image blob');
       }
+
+      // Send blob to serverless endpoint so the browser gets a real file download response
+      const response = await fetch('/api/download-frame', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'image/png',
+        },
+        body: blob,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Download failed with status ${response.status}`);
+      }
+
+      // Read response back as a blob and trigger a download
+      const downloadBlob = await response.blob();
+      const url = URL.createObjectURL(downloadBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'memory-frame.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Export failed:', err);
     }
