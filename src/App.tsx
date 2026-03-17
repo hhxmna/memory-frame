@@ -221,31 +221,37 @@ export function App() {
         throw new Error('Failed to create image blob');
       }
 
-      // Send blob to serverless endpoint so the browser gets a real file download response
-      const response = await fetch('/api/download-frame', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'image/png',
-        },
-        body: blob,
-      });
+      const triggerDownload = (downloadBlob: Blob) => {
+        const url = URL.createObjectURL(downloadBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'memory-frame.png';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      };
 
-      if (!response.ok) {
-        throw new Error(`Download failed with status ${response.status}`);
+      try {
+        const response = await fetch('/api/download-frame', {
+          method: 'POST',
+          headers: { 'Content-Type': 'image/png' },
+          body: blob,
+        });
+        if (response.ok) {
+          const downloadBlob = await response.blob();
+          triggerDownload(downloadBlob);
+          return;
+        }
+      } catch (_) {
+        // API unavailable or failed: fall back to client-side download
       }
-
-      // Read response back as a blob and trigger a download
-      const downloadBlob = await response.blob();
-      const url = URL.createObjectURL(downloadBlob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'memory-frame.png';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
+      triggerDownload(blob);
     } catch (err) {
       console.error('Export failed:', err);
+      alert(
+        err instanceof Error ? err.message : 'Export failed. Try again or use Chrome or Edge.'
+      );
     }
   }, [selectedFrame]);
 
