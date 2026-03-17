@@ -718,6 +718,22 @@ body {
 }
 
 /* Download icon */
+.download-safari-hint {
+  position: fixed;
+  bottom: 76px;
+  right: 24px;
+  margin: 0;
+  padding: 8px 12px;
+  max-width: 220px;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: #5c5c5c;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #d4cfc6;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
 .download-icon {
   position: fixed;
   bottom: 24px;
@@ -903,6 +919,11 @@ body {
   .download-icon {
     right: 16px;
     bottom: 16px;
+  }
+
+  .download-safari-hint {
+    right: 16px;
+    bottom: 68px;
   }
 
   .about-layout {
