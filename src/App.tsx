@@ -31,13 +31,6 @@ export function App() {
   const exportContainerRef = React.useRef<HTMLDivElement | null>(null);
   const cursorStyleRef = React.useRef<HTMLStyleElement | null>(null);
 
-  const isSafari = React.useMemo(
-    () =>
-      /Safari/i.test(navigator.userAgent) &&
-      !/Chrome|CriOS|FxiOS|Edg/i.test(navigator.userAgent),
-    []
-  );
-
   // Set custom cursor (PNG from canvas); color by view/template: about = pine green, else partner/family/friend.
   // Use one persistent <style> and only update its content so we never remove it (avoids flashing back to red from stylesheet).
   React.useEffect(() => {
@@ -518,11 +511,6 @@ export function App() {
             </section>
           </main>
 
-          {isSafari && (
-            <p className="download-safari-hint" role="status">
-              Export works best in Chrome or Edge. Safari currently can't export this frame.
-            </p>
-          )}
           <button
             type="button"
             className="download-icon"
